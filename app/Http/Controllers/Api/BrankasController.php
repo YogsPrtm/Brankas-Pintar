@@ -13,16 +13,15 @@ class BrankasController extends Controller
 
         // validasi format data json
         $validated = $request->validate([
-            'perangkat_id' => 'required|integer',
+            'id_perangkat' => 'required|integer',
             'aktivitas' => 'required|string',
-            'sumber' => 'required|string',
             'hasil' => 'required|string',
             'status_pintu' => 'required|in:terkunci,terbuka',
-            'status_alarm' => 'required|in:aman_bahaya'
+            'status_alarm' => 'required|in:aman,bahaya'
         ]);
 
         // update status terkini
-        $perangkat = Perangkat::find($validated['perangkat_id']);
+        $perangkat = Perangkat::find($validated['id_perangkat']);
         if($perangkat){
             $perangkat->update([
                 'status_pintu' => $validated['status_pintu'],
@@ -38,9 +37,8 @@ class BrankasController extends Controller
         // catat kejadian ke log
 
         LogAktivitas::create([
-            'perangkat_id' => $validated['perangkat_id'],
+            'id_perangkat' => $validated['id_perangkat'],
             'aktivitas' => $validated['aktivitas'],
-            'sumber' => $validated['sumber'],
             'hasil' => $validated['hasil']
         ]);
 
@@ -64,7 +62,7 @@ class BrankasController extends Controller
 
         // ambil data riwayat maks 10
 
-        $logs = LogAktivitas::where('perangkat_id', 1)->orderBy('created_at', 'desc')->take(10)->get();
+        $logs = LogAktivitas::where('id_perangkat', 1)->orderBy('created_at', 'desc')->take(10)->get();
         return response()->json([
             'status' => 'success',
             'data'   => [
