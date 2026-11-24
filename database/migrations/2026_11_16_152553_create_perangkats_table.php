@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama_brankas')->default('Brankas Utama');
             $table->enum('status_pintu', ['terkunci', 'terbuka'])->default('terkunci');
             $table->enum('status_alarm', ['aman','bahaya'])->default('aman');
+            $table->timestamp('last_seen')->nullable();
             $table->timestamps();
         });
     }

@@ -5,4 +5,5 @@ use App\Http\Controllers\Api\BrankasController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/brankas/data', [BrankasController::class, 'storeData']);
+Route::post('brankas/heartbeat', [BrankasController::class, 'heartbeat']);
 Route::get('brankas/dashboard', [BrankasController::class, 'getDashboard']);

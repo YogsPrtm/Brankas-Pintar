@@ -25,7 +25,8 @@ class BrankasController extends Controller
         if($perangkat){
             $perangkat->update([
                 'status_pintu' => $validated['status_pintu'],
-                'status_alarm' => $validated['status_alarm']
+                'status_alarm' => $validated['status_alarm'],
+                'last_seen' => now()
             ]);
         } else {
             return response()->json([
@@ -60,15 +61,45 @@ class BrankasController extends Controller
             ], 404);
         }
 
+        $isOnline = $perangkat->last_seen && $perangkat->last_seen->gt(now()->subSeconds(45));
+
         // ambil data riwayat maks 10
 
         $logs = LogAktivitas::where('id_perangkat', 1)->orderBy('created_at', 'desc')->take(10)->get();
         return response()->json([
-            'status' => 'success',
-            'data'   => [
-                'status_terkini' => $perangkat,
-                'riwayat'        => $logs
-            ]
-        ], 200);
+        'status' => 'success',
+        'data'   => [
+            'status_terkini' => [
+                'id_perangkat'   => $perangkat->id_perangkat,
+                'nama_brankas'   => $perangkat->nama_brankas,
+                'status_koneksi' => $isOnline ? 'aktif' : 'offline',
+                'status_pintu'   => $perangkat->status_pintu,
+                'status_alarm'   => $perangkat->status_alarm === 'bahaya' ? 'aktif' : 'nonaktif',
+                'last_seen'      => $perangkat->last_seen?->format('d M Y, H:i:s'),
+            ],
+            'riwayat' => $logs->map(function ($log) {
+                return [
+                    'id_log'    => $log->id_log,
+                    'aktivitas' => $log->aktivitas,
+                    'hasil'     => $log->hasil,
+                    'waktu'     => $log->created_at->format('d M Y, H:i:s'),
+                ];
+            }),
+        ],
+    ], 200);
+    }
+
+    public function heartbeat(Request $request)
+    {
+        $id = $request->input('id_perangkat', 1);
+        $perangkat = Perangkat::find($id);
+
+        if (!$perangkat) {
+            return response()->json(['status' => 'error', 'message' => 'Perangkat tidak ditemukan'], 404);
+        }
+
+        $perangkat->update(['last_seen' => now()]);
+
+        return response()->json(['status' => 'success', 'message' => 'Heartbeat diterima'], 200);
     }
 }

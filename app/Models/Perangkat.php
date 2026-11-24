@@ -17,7 +17,12 @@ class Perangkat extends Model
     protected $fillable = [
         'nama_brankas',
         'status_pintu', 
-        'status_alarm'
+        'status_alarm',
+        'last_seen'
+    ];
+
+    protected $casts = [
+        'last_seen' => 'datetime'
     ];
 
     public function logs(){
