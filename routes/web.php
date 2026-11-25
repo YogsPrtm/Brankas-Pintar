@@ -7,4 +7,4 @@ use App\Http\Controllers\DashboardController;
 
 Route::post('/brankas/data', [BrankasController::class, 'storeData']);
 Route::get('/brankas/dashboard', [BrankasController::class, 'getDashboard']);
-Route::get('/dashboard', [DashboardController::class, 'index']);
+Route::get('/', [DashboardController::class, 'index']);
