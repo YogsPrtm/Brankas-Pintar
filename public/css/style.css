@@ -1,0 +1,52 @@
+        :root {
+            --putih:      #FFFFFF;
+            --abu:        #999999;
+            --biru-muda:  #c6dff1;
+            --abu-biru:   #aecade;
+            --biru:       #075A96;
+            --hijau:      #125823;
+            --coklat:     #825B14;
+            --kuning:     #FFCB71;
+            --krem:       #FFEFD2;
+            --merah:      #B3261E;  
+        }
+
+        body {
+            --bs-body-font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --bs-secondary-color: rgba(5, 68, 115, .75);   
+            font-family: var(--bs-body-font-family);
+            background: var(--biru-muda);
+            color: var(--hitam);
+        }
+
+        hr { border-color: var(--abu-biru); opacity: 1; }
+
+        .card-box {
+            background: var(--putih);
+            border: 1px solid var(--abu);
+            border-radius: 20px;
+        }
+
+        .warna-ok         { color: var(--hijau); }
+        .warna-peringatan { color: var(--coklat); }
+        .warna-bahaya     { color: var(--merah); }
+
+        .table { --bs-table-border-color: var(--abu-biru); }
+        .table thead th { font-size: .75rem; letter-spacing: .05em; }
+
+        .badge-hasil {
+            display: inline-block;
+            min-width: 92px;
+            padding: .4rem 1rem;
+            border-radius: 6px;
+            border: 1px solid;
+            font-size: .8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .badge-hasil-info    { background: var(--biru-muda); color: var(--biru);   border-color: var(--abu-biru); }
+        .badge-hasil-warning { background: var(--krem);      color: var(--coklat); border-color: var(--kuning); }
+
+        .logo-brankas { height: 120px; width: auto; }
+
+        .kolom-koneksi { border-left: 1px solid var(--abu-biru); }
