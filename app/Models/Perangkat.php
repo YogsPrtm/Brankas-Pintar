@@ -29,4 +29,16 @@ class Perangkat extends Model
         return $this->hasMany(LogAktivitas::class, 'id_perangkat', 'id_perangkat');
     }
 
+    public function resetAlarm(string $sumber = 'Dashboard Web'): LogAktivitas
+    {
+        $this->update([
+            'status_alarm' => 'aman',
+        ]);
+
+        return LogAktivitas::create([
+            'id_perangkat' => $this->id_perangkat,
+            'aktivitas'    => "Reset Alarm ({$sumber})",
+            'hasil'        => 'Berhasil',
+        ]);
+    }
 }

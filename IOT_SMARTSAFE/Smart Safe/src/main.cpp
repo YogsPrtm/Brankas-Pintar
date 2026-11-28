@@ -69,7 +69,8 @@ const unsigned long sensorInterval = 50;
 unsigned long lastSensorRead = 0;
 
 int wrongAttempts = 0;
-bool alarmActive = false;
+volatile bool alarmActive = false;
+volatile bool remoteResetRequested = false;
 bool unlocked = false;
 bool mpuReady = false;
 bool firstReading = true;
@@ -175,6 +176,14 @@ void sendHeartbeatHttp() {
 
   int httpCode = http.POST(payload);
   Serial.printf("[HTTP HEARTBEAT] -> HTTP %d\n", httpCode);
+
+  if (httpCode == 200) {
+    String response = http.getString();
+    // Jika di Wokwi alarm sedang bunyi, tapi di database sudah diubah jadi "aman"
+    if (alarmActive && response.indexOf("\"status_alarm\":\"aman\"") != -1) {
+      remoteResetRequested = true;
+    }
+  }
   http.end();
 }
 
@@ -219,8 +228,9 @@ void networkTask(void *parameter) {
       lastHeartbeat = millis(); // storeData sudah memperbarui last_seen di Laravel
     }
 
-    // Kirim heartbeat berkala jika perangkat sedang standby
-    if (millis() - lastHeartbeat >= HEARTBEAT_INTERVAL) {
+    // Saat alarm bunyi, cek status ke Laravel tiap 2 detik agar respons reset web cepat
+    unsigned long currentInterval = alarmActive ? 2000 : HEARTBEAT_INTERVAL;
+    if (millis() - lastHeartbeat >= currentInterval) {
       sendHeartbeatHttp();
       lastHeartbeat = millis();
     }
@@ -301,6 +311,24 @@ void resetAlarm() {
     showPinEntry();
   }
   recordEvent(SafeEvent::Reset);
+}
+
+void resetAlarmFromRemote() {
+  alarmActive = false;
+  alarmReason = AlarmReason::None;
+  wrongAttempts = 0;
+  enteredPIN = "";
+  noTone(BUZZER_PIN);
+  digitalWrite(BUZZER_PIN, LOW);
+  digitalWrite(LED_RED, LOW);
+
+  if (unlocked) {
+    showMessage("ACCESS GRANTED", "DOOR UNLOCKED");
+  } else {
+    lockDoor();
+    showPinEntry();
+  }
+  Serial.println("[REMOTE] Alarm berhasil dimatikan dari Dashboard Web.");
 }
 
 // ================= DETEKSI GETARAN =================
@@ -459,6 +487,13 @@ void setup() {
 // ================= LOOP =================
 void loop() {
   checkResetButton();
+
+  if (remoteResetRequested) {
+    remoteResetRequested = false;
+    if (alarmActive) {
+      resetAlarmFromRemote();
+    }
+  }
 
   if (alarmActive) {
     delay(5);

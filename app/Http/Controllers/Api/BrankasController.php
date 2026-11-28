@@ -100,6 +100,41 @@ class BrankasController extends Controller
 
         $perangkat->update(['last_seen' => now()]);
 
-        return response()->json(['status' => 'success', 'message' => 'Heartbeat diterima'], 200);
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Heartbeat diterima',
+            'status_alarm' => $perangkat->status_alarm]
+            , 200);
     }
+
+    public function resetAlarm(Request $request)
+{
+    $id = $request->input('id_perangkat', 1);
+    $perangkat = Perangkat::find($id);
+
+    if (!$perangkat) {
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Perangkat tidak ditemukan',
+        ], 404);
+    }
+
+    if ($perangkat->status_alarm === 'aman') {
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Alarm sudah dalam kondisi nonaktif',
+        ], 200);
+    }
+
+    $log = $perangkat->resetAlarm('Dashboard Web');
+
+    return response()->json([
+        'status'  => 'success',
+        'message' => 'Alarm berhasil direset ke status aman',
+        'data'    => [
+            'status_terkini' => $perangkat->fresh(),
+            'log_baru'       => $log,
+        ],
+    ], 200);
+}
 }
